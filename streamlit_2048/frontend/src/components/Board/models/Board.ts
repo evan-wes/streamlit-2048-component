@@ -6,7 +6,7 @@ import { pixelSize } from "../../../styles";
  *
  * @constant {number}
  */
-export const tileCount = 4;
+export const tileCount = 4; // changed
 
 /**
  * The duration of every animation in ms.

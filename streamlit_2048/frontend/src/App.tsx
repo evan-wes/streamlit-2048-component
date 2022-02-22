@@ -2,20 +2,51 @@ import React, { useEffect, useState } from "react";
 import { Button } from "./components/Button";
 import { Game } from "./components/Game";
 
-import { Streamlit, withStreamlitConnection } from "streamlit-component-lib";
+import { ComponentProps, Streamlit, withStreamlitConnection } from "streamlit-component-lib";
 
 import "./App.less";
 
+// NEW internal counter for number of games (incremented on restart)
+var session_game_number = 1
+// NEW game log to get from Game component
+var game_log: any = {}
+
 /* eslint-disable react/jsx-no-target-blank */
 // export const App = () => {
-const App = () => {
+const App = (props: ComponentProps) => {
   useEffect(() => Streamlit.setFrameHeight());
   const [date, setDate] = useState<Date>(new Date());
 
+  
+
   const handleRestart = () => {
     setDate(new Date());
+    // NEW internal game counter
+    session_game_number++;
   };
 
+  // NEW Function to try to get data from Game component
+  const handleCallback = (childData:any) => {
+    const game_log_key = `session_game_${session_game_number}`
+    game_log[game_log_key] = childData
+  }
+
+  // NEW Get player_name from props
+  const { player_name } = props.args;
+
+  // NEW test Submit button function to send data back to streamlit
+  const handleSubmit = () => {
+    // NEW return value to pass back to Streamlit
+    const return_val = {
+      name: player_name,
+      react_internal_session_game_number: session_game_number,
+      date: date,
+      game_log: game_log
+    }
+    Streamlit.setComponentValue(return_val)
+  };
+  
+//<Game key={date.toISOString()} />
   return (
     <div className="App">
       <div className="header">
@@ -26,50 +57,17 @@ const App = () => {
           <Button onClick={handleRestart}>Restart</Button>
         </div>
       </div>
-      <Game key={date.toISOString()} />
-      <div>
-        <p>
-          <b>Wondering how was that built?</b> You can find a video tutorial and
-          code here:
-        </p>
-        <ul>
-          <li>
-            <a href="https://youtu.be/vI0QArPnkUc" target="_blank">
-              Tutorial (YouTube video)
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://github.com/mateuszsokola/2048-in-react/"
-              target="_blank"
-            >
-              Source Code (Github)
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://mateuszsokola.github.io/2048-animation-examples/"
-              target="_blank"
-            >
-              Animation Examples (Github Pages)
-            </a>
-          </li>
-        </ul>
-        <p>
-          This game (2048) was built using <b>React</b> and <b>TypeScript</b>.
-          The unique part of this example is animations. The animations in React
-          aren't that straightforward, so I hope you can learn something new
-          from it.
-        </p>
-      </div>
+      
+      <Game key={date.toISOString()} parentCallback = {handleCallback} />
+      
       <div className="footer">
-        Made with ❤️ by{" "}
-        <a
-          href="https://www.youtube.com/channel/UCJV16_5c4A0amyBZSI4yP6A"
-          target="_blank"
-        >
-          Matt Sokola
-        </a>
+        <div>
+          <h1>View game data</h1>
+        </div>
+        <div>
+          <Button onClick={handleSubmit}>View</Button>
+        </div>
+        
       </div>
     </div>
   );

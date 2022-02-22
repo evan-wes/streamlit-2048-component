@@ -9,6 +9,6 @@ _component_func = components.declare_component(
 
 # Define a public function for the package,
 # which wraps the caller to the frontend code
-def st_2048():
-    component_value = _component_func()
+def st_2048(player_name=''):
+    component_value = _component_func(player_name=player_name)
     return component_value

@@ -1,16 +1,44 @@
-import React, { useEffect } from "react";
+import React, { useEffect } from "react"; // NEW added useState
 import { useThrottledCallback } from "use-debounce";
 
 import { useGame } from "./hooks/useGame";
 import { Board, animationDuration, tileCount } from "../Board";
 
-export const Game = () => {
+
+// type State = {
+//   game_log: {
+//     move_number: number;
+//     move_direction: string;
+//     value_array: number[];
+//   };
+// }
+
+// NEW added parentCallback (parentCallback:Function)
+export const Game = (props:any) => {
   const [tiles, moveLeft, moveRight, moveUp, moveDown] = useGame();
 
+  // NEW counter for moves and dictionary storage
+  var move_counter = 1
+  var move_log: any = {};
+  
   const handleKeyDown = (e: KeyboardEvent) => {
     // disables page scrolling with keyboard arrows
     e.preventDefault();
 
+    // NEW start to build the game (called move_log here)
+    const move_log_key = `move_${move_counter}`
+    move_log[move_log_key] = {}
+    move_log[move_log_key]['direction'] = `${e.code}`
+    move_log[move_log_key]['tiles'] = [...tiles]
+    move_counter++
+    // NEW added parentCallback
+    props.parentCallback(move_log)
+
+    console.log(move_log)
+
+    // NEW Print out which button was pressed
+    console.log(`Button pressed: ${e.code}`)
+    
     switch (e.code) {
       case "ArrowLeft":
         moveLeft();
