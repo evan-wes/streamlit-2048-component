@@ -6,7 +6,7 @@ In this repo, I have incorporated the above frontend code into a custom Streamli
  - [X] Component is working in Streamlit
  - [ ] Add scoring
  - [ ] Add capability of input to be recieved from streamlit
- - [ ] Add capability to return data to streamlit containing the game state and move/board history
+ - [X] Add capability to return data to streamlit containing the game state and move/board history
 
 The last modification is what will enable this component to be used in building an AI to play the game by learning play how to play from datasets of many games. The purpose of using a custom component is that the streamlit app is not rerun top-to-bottom whenever a player makes a move, as in the current implementation. The game also looks and plays much nicer than my current basic HTML/CSS frontend.
 

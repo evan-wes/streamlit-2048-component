@@ -13,7 +13,7 @@ import { Board, animationDuration, tileCount } from "../Board";
 //   };
 // }
 
-// NEW added parentCallback (parentCallback:Function)
+// NEW added props to pass callback
 export const Game = (props:any) => {
   const [tiles, moveLeft, moveRight, moveUp, moveDown] = useGame();
 
@@ -25,7 +25,7 @@ export const Game = (props:any) => {
     // disables page scrolling with keyboard arrows
     e.preventDefault();
 
-    // NEW start to build the game (called move_log here)
+    // NEW start to build the game log (called move_log here)
     const move_log_key = `move_${move_counter}`
     move_log[move_log_key] = {}
     move_log[move_log_key]['direction'] = `${e.code}`
