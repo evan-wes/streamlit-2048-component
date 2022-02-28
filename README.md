@@ -4,7 +4,7 @@ This repo contains a React component for the game 2048 cloned from [this repo](h
 
 In this repo, I have incorporated the above frontend code into a custom Streamlit component. The component will be inserted into my 2048 AI project after testing and making a few planned modifications:
  - [X] Component is working in Streamlit
- - [ ] Add scoring
+ - [X] Add scoring
  - [ ] Add capability of input to be recieved from streamlit
  - [ ] Add ability to check game over
  - [ ] Add more styles past 2048 tile
