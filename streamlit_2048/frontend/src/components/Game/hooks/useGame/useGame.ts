@@ -320,8 +320,9 @@ export const useGame = () => {
   const moveRight = moveRightFactory();
   const moveUp = moveUpFactory();
   const moveDown = moveDownFactory();
-
-  return [tileList, moveLeft, moveRight, moveUp, moveDown] as [
+// NEW add score return value as a number
+  return [state.score, tileList, moveLeft, moveRight, moveUp, moveDown] as [
+    number,
     TileMeta[],
     () => void,
     () => void,

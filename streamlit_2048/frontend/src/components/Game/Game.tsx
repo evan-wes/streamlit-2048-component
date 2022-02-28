@@ -1,44 +1,25 @@
-import React, { useEffect } from "react"; // NEW added useState
+import React, { useEffect, useState } from "react"; // NEW added useState
 import { useThrottledCallback } from "use-debounce";
 
 import { useGame } from "./hooks/useGame";
 import { Board, animationDuration, tileCount } from "../Board";
 
 
-// type State = {
-//   game_log: {
-//     move_number: number;
-//     move_direction: string;
-//     value_array: number[];
-//   };
-// }
 
-// NEW added props to pass callback
+// NEW added props to pass callback, added score to return value
 export const Game = (props:any) => {
-  const [tiles, moveLeft, moveRight, moveUp, moveDown] = useGame();
+  const [score, tiles, moveLeft, moveRight, moveUp, moveDown] = useGame();
 
   // NEW counter for moves and dictionary storage
-  var move_counter = 1
-  var move_log: any = {};
-  
+  var [move_counter, setMoveCounter] = useState(0)
+  // NEW added parentRetrieveScoreCallback callback function to update score
+  props.parentRetrieveScoreCallback(score);
+
   const handleKeyDown = (e: KeyboardEvent) => {
     // disables page scrolling with keyboard arrows
     e.preventDefault();
-
-    // NEW start to build the game log (called move_log here)
-    const move_log_key = `move_${move_counter}`
-    move_log[move_log_key] = {}
-    move_log[move_log_key]['direction'] = `${e.code}`
-    move_log[move_log_key]['tiles'] = [...tiles]
-    move_counter++
-    // NEW added parentCallback
-    props.parentCallback(move_log)
-
-    console.log(move_log)
-
     // NEW Print out which button was pressed
     console.log(`Button pressed: ${e.code}`)
-    
     switch (e.code) {
       case "ArrowLeft":
         moveLeft();
@@ -53,6 +34,21 @@ export const Game = (props:any) => {
         moveDown();
         break;
     }
+
+    // NEW create new_move_log_entry to send back to App
+    const new_move_log_entry: any = {
+      move_log_key: move_counter,
+      move_log_entry: {
+        score: score,
+        move: `${e.code}`,
+        tiles: [...tiles]
+      }
+    }
+    
+    // NEW send new move entry back to App
+    props.parentRetrieveNewMoveLogCallback(new_move_log_entry)
+    // NEW increment move_counter in the state
+    setMoveCounter(move_counter + 1)    
   };
 
   // protects the reducer from being flooded with events.
@@ -64,11 +60,14 @@ export const Game = (props:any) => {
 
   useEffect(() => {
     window.addEventListener("keydown", throttledHandleKeyDown);
-
+    
     return () => {
       window.removeEventListener("keydown", throttledHandleKeyDown);
     };
   }, [throttledHandleKeyDown]);
+
+  
+  
 
   return <Board tiles={tiles} tileCountPerRow={tileCount} />;
 };

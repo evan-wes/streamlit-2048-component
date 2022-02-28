@@ -1,5 +1,6 @@
 import { TileMeta } from "../../../Tile";
 
+// NEW added score number variable to state
 type State = {
   tiles: {
     [id: number]: TileMeta;
@@ -7,13 +8,16 @@ type State = {
   inMotion: boolean;
   hasChanged: boolean;
   byIds: number[];
+  score: number;
 };
 
+// NEW added score = 0 to initial state
 export const initialState: State = {
   tiles: {},
   byIds: [],
   hasChanged: false,
   inMotion: false,
+  score: 0
 };
 
 type Action =
@@ -50,6 +54,8 @@ export const GameReducer = (state: State, action: Action) => {
         [action.destination.id]: destination,
         ...restTiles
       } = state.tiles;
+      // NEW update score variable in state (doesn't work)
+      // state.score += action.source.value + action.destination.value;
       return {
         ...state,
         tiles: {
@@ -62,6 +68,8 @@ export const GameReducer = (state: State, action: Action) => {
         },
         byIds: state.byIds.filter((id) => id !== action.source.id),
         hasChanged: true,
+        // NEW add line with modification to score (works)
+        score: state.score + action.source.value + action.destination.value,
       };
     case "START_MOVE":
       return {
