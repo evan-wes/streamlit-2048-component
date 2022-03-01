@@ -2,7 +2,7 @@
 
 This repo contains a React component for the game 2048 cloned from [this repo](https://github.com/mateuszsokola/2048-in-react/) developed by Matt Sokola.
 
-In this repo, I have incorporated the above frontend code into a custom Streamlit component. The component will be inserted into my 2048 AI project after testing and making a few planned modifications:
+In this repo, I have incorporated the above linked React component into a custom Streamlit component. The component will be inserted into my 2048 AI project after testing and making a few planned modifications:
  - [X] Component is working in Streamlit
  - [X] Add scoring
  - [X] Add capability to return data to streamlit containing the game state and move/board history
