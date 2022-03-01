@@ -46,7 +46,6 @@ const App = (props: ComponentProps) => {
       ...game_log,
       [game_number]: move_log
     })
-    console.log(game_log)
     // NEW increment game counter
     setGameNumber(game_number + 1);
     // NEW reset score to zero

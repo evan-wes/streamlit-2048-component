@@ -7,12 +7,18 @@ import { TileMeta } from "../../../Tile";
 import { useIds } from "../useIds";
 import { GameReducer, initialState } from "./reducer";
 
+// NEW variable to hold the current game score, initialized outside of useGame hook
+var gameScore: number = 0
+// NEW variable to define whether the board has changed, and return back to Game
+var boardChanged: boolean = false
+
 export const useGame = () => {
   const isInitialRender = useRef(true);
   const [nextId] = useIds();
   // state
   const [state, dispatch] = useReducer(GameReducer, initialState);
   const { tiles, byIds, hasChanged, inMotion } = state;
+   
 
   const createTile = useCallback(
     ({ position, value }: Partial<TileMeta>) => {
@@ -80,8 +86,18 @@ export const useGame = () => {
     if (emptyTiles.length > 0) {
       const index = Math.floor(Math.random() * emptyTiles.length);
       const position = emptyTiles[index];
+      // NEW replace always creating a new tile with value 2 by logic to choose a value of 2 or 4 with different probabilities
+      // createTile({ position, value: 2 });
 
-      createTile({ position, value: 2 });
+      // NEW add logic to pick either a value of 2 with 95% chance or a 4 with 5% chance
+      const twos = new Array(19).fill(2);
+      const fours = new Array(1).fill(4);
+      const newValues = twos.concat(fours);
+      const randomIndex = Math.floor(Math.random() * newValues.length);
+      const newTileValue = newValues[randomIndex]
+      createTile({ position, value: newTileValue });
+
+      
     }
   }, [findEmptyTiles, createTile]);
 
@@ -103,6 +119,11 @@ export const useGame = () => {
     howManyMerges: number,
     maxIndexInRow: number
   ) => number;
+
+  // NEW function to increment the game score
+  const incrementScore = (inc: number) => {
+    gameScore += inc
+  }
 
   const move = (
     retrieveTileIdsPerRowOrColumn: RetrieveTileIdsPerRowOrColumn,
@@ -144,11 +165,13 @@ export const useGame = () => {
 
           // delays the merge by 250ms, so the sliding animation can be completed.
           throttledMergeTile(tile, previousTile);
+          // NEW Since tiles were merged, increment game score with sum of merged tile values
+          incrementScore(tile.value + previousTile.value);
           // previous tile must be cleared as a single tile can be merged only once per move.
           previousTile = undefined;
           // increment the merged counter to correct position for the consecutive tiles to get rid of gaps
           mergedTilesCount += 1;
-
+          
           return updateTile(tile);
         }
 
@@ -303,12 +326,31 @@ export const useGame = () => {
 
   useEffect(() => {
     if (isInitialRender.current) {
-      createTile({ position: [0, 1], value: 2 });
-      createTile({ position: [0, 2], value: 2 });
+      // NEW replaced the following two lines with code to randombly generate new starting tiles
+      // createTile({ position: [0, 1], value: 2 });
+      // createTile({ position: [0, 2], value: 2 });
+      // NEW generate random positions for two tiles
+      var position_tile_1_col = Math.floor(Math.random() * tileCountPerRowOrColumn);
+      var position_tile_1_row = Math.floor(Math.random() * tileCountPerRowOrColumn);
+      var position_tile_2_col = Math.floor(Math.random() * tileCountPerRowOrColumn);
+      var position_tile_2_row = Math.floor(Math.random() * tileCountPerRowOrColumn);
+      // NEW Check positions are not the same, and regenerate them until they are unique
+      while ((position_tile_1_col === position_tile_2_col) && (position_tile_1_row === position_tile_2_row)) {
+        // Regenerate positions
+        position_tile_1_col = Math.floor(Math.random() * tileCountPerRowOrColumn);
+        position_tile_1_row = Math.floor(Math.random() * tileCountPerRowOrColumn);
+        position_tile_2_col = Math.floor(Math.random() * tileCountPerRowOrColumn);
+        position_tile_2_row = Math.floor(Math.random() * tileCountPerRowOrColumn);
+      }
+      // NEW create both tiles using the randomly generated positions
+      createTile({ position: [position_tile_1_col, position_tile_1_row], value: 2 });
+      createTile({ position: [position_tile_2_col, position_tile_2_row], value: 2 });
+      
       isInitialRender.current = false;
       return;
     }
-
+    // NEW capture value of hasChanged into boardChanged to return back to Game
+    boardChanged = hasChanged
     if (!inMotion && hasChanged) {
       generateRandomTile();
     }
@@ -320,8 +362,9 @@ export const useGame = () => {
   const moveRight = moveRightFactory();
   const moveUp = moveUpFactory();
   const moveDown = moveDownFactory();
-// NEW add score return value as a number
-  return [state.score, tileList, moveLeft, moveRight, moveUp, moveDown] as [
+// NEW add boardChanged and gameScore to return value as a boolean and number
+  return [boardChanged, gameScore, tileList, moveLeft, moveRight, moveUp, moveDown] as [
+    boolean,
     number,
     TileMeta[],
     () => void,
