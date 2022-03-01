@@ -12,6 +12,6 @@ In this repo, I have incorporated the above linked React component into a custom
  - [ ] Add ability to check game over status
  - [ ] Add more styles past 2048 tile
 
-The last modification is what will enable this component to be used in building an AI to play the game by learning play how to play from datasets of many games. The purpose of using a custom component is that the streamlit app is not rerun top-to-bottom whenever a player makes a move, as in the current implementation. The game also looks and plays much nicer than my current basic HTML/CSS frontend.
+These modifications will enable this component to be used in building an AI to play the game by learning play how to play from datasets created from many game plays. The purpose of using a custom component is that the streamlit app is not rerun top-to-bottom whenever a player makes a move, as in the current implementation. The game also looks and plays much nicer than my current basic HTML/CSS frontend.
 
 To run the component, you must have `Streamlit` and `Node.js` installed. Open two terminals. In the first, cd to the `frontend` directory inside `streamlit_2048` and run `npm run start`. In the second terminal, run `streamlit run app.py`. You may need to recompile the front end code after cloning this repo by running `npm install` inside the `frontend` directory. If you need help, follow the "Project Setup" steps in this [extremely helpful guide](https://streamlit-components-tutorial.netlify.app/). to creating custom components for Streamlit.
