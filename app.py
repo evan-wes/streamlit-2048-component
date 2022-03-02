@@ -11,13 +11,16 @@ def string_array_to_numpy(str_arr):
 
     # arr_str = str_arr.replace(', ',',').replace(' ', ',')
     # return eval('np.array('+arr_str+')')
+    str_arr = str_arr.replace('\n', '')
     return eval('np.array('+str_arr+', dtype="uint8")')
 
 def analyse_game_record(record_df):
     
     df = pd.DataFrame()
 
-    df['turn'] = record_df['turn']
+    df[['score']] = record_df[['score']]
+    df[['move']] = record_df[['move']]
+    # df['turn'] = record_df['turn']
     df['board'] = record_df['board'].apply(string_array_to_numpy)
     df['board_exp'] = record_df['board_exp'].apply(string_array_to_numpy)
     df['non_zero'] = df['board'].apply(lambda x: x[x>0])
@@ -35,7 +38,8 @@ def analyse_game_record(record_df):
     # print(type(df['board_real'][0]))
     # print(df.dtypes)
 
-    return df[['turn', 'min', 'max', 'exp_min', 'exp_max', 'range', 'range_exp']]
+    # return df[['turn', 'min', 'max', 'exp_min', 'exp_max', 'range', 'range_exp']]
+    return df[['score', 'move', 'min', 'max', 'exp_min', 'exp_max', 'range', 'range_exp']]
 
 def convert_2048_component_return_value_to_dataframes(ret):
     """Function to process return value of react 2048 component into dataframes"""
@@ -48,7 +52,7 @@ def convert_2048_component_return_value_to_dataframes(ret):
     # Iterate over games in game dictionary
     for game_id, move_log in ret['game_log'].items():
         # Iterate over moves in move log dictionary
-        move_ids = []
+        # move_ids = []
         scores = []
         moves = []
         boards = []
@@ -64,23 +68,44 @@ def convert_2048_component_return_value_to_dataframes(ret):
                 board_exp[y][x] = value_to_exp_map[tile['value']]
             # Get exponential representation of board
             # Append move dictionary info to each list
-            move_ids.append(move_id)
+            # move_ids.append(move_id)
             scores.append(move_dict['score'])
             moves.append(move_dict['move'].replace('Arrow', ''))
             # boards.append(np.array2string(board))
             # board_exps.append(np.array2string(board_exp))
-            boards.append(str(board.tolist()))
-            board_exps.append(str(board_exp.tolist()))
+            boards.append(str(board.tolist()).replace('], [', '],  \n  ['))
+            board_str = str(board.tolist()).replace('], [', '],  \n  [').replace('0', ' . ')
+            # st.write(f"""{board_str}""")
+            board_exps.append(str(board_exp.tolist()).replace('], [', '],\n ['))
             
         # Create dataframe for this game and add to dictionary
-        game_df = pd.DataFrame({'turn': move_ids, 'score': scores, 'move': moves, 'board': boards, 'board_exp': board_exps})
+        # game_df = pd.DataFrame({'turn': move_ids, 'score': scores, 'move': moves, 'board': boards, 'board_exp': board_exps})
+        game_df = pd.DataFrame({'score': scores, 'move': moves, 'board': boards, 'board_exp': board_exps})
         game_dfs[game_id] = game_df
     
     # Return dictionary of dataframes
     return game_dfs
 
-def analyse_game_dfs(game_dfs):
-    """Function to perform some rudimentary analysis on the game dataframes"""
+def process_game_df(game_df):
+    """
+    Function to process the raw game move logs.
+    Processing steps:
+    1. Delete rows with duplicate boards:
+        The game log can include extra moves when a board will not 
+        change after a given move, and that move is repeated:
+            - I.e. repeated "Down" moves when tiles are all stacked 
+              vertically and cannot merge
+        Once the player realizes the given move will not progress the 
+        board, they choose a different move direction. The row with the 
+        last repeated 'board' value is the one with the new move, and
+        is the one to keep
+    """
+    # Correctly drop duplicates:
+    processed_game_df = game_df.drop_duplicates(subset='board', keep='last')
+
+    # Other processing steps do next...
+
+    return processed_game_df
 
 
 st.title('Testing React 2048 app in Streamlit')
@@ -93,18 +118,20 @@ if game_return_val is not None:
     except:
         st.warning('Try Again (You may need to make another move)')
 
-    st.markdown(f"# Game log for player {game_return_val['name']}:")
+    # st.markdown(f"# Game log for player {game_return_val['name']}:")
     for game_id, game_df in game_dfs.items():
         
         st.markdown(f"## Game {game_id}:")
-        st.write(game_df)
+        processed_game_df = process_game_df(game_df)
+        st.write(processed_game_df.drop(columns=['board_exp']))
     
     st.markdown(f"# Game log analysis for player {game_return_val['name']}:")
     for game_id, game_df in game_dfs.items():
         st.markdown(f"## Game {game_id}:")
         try:
             df = analyse_game_record(game_df)
-            st.write(df)
+            # st.write(df)
+            st.write(df.drop_duplicates())
         except:
             st.warning('Try Again (You may need to make another move)')
 

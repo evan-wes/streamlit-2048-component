@@ -9,8 +9,8 @@ import { GameReducer, initialState } from "./reducer";
 
 // NEW variable to hold the current game score, initialized outside of useGame hook
 var gameScore: number = 0
-// NEW variable to define whether the board has changed, and return back to Game
-var boardChanged: boolean = false
+// NEW variable to hold the gameOver status, initialized outside of useGame hook
+var gameOver: boolean = false
 
 export const useGame = () => {
   const isInitialRender = useRef(true);
@@ -80,6 +80,91 @@ export const useGame = () => {
     return emptyTiles;
   }, [retrieveTileMap]);
 
+  // NEW function to check if the game is over
+  const checkGameOver = () => {
+    const emptyTiles = findEmptyTiles();
+    // If there are any empty tiles, the game is not over
+    if (emptyTiles.length > 0) {
+      return false
+    } else {
+      // Determine if there are any available merges
+      // Modified copies of tile retrieval functions from move factories
+      const retrieveTileIdsByRow = (tileMap: number[], rowIndex: number) => { 
+        const tileIdsInRow = [
+          tileMap[rowIndex * tileCountPerRowOrColumn + 0],
+          tileMap[rowIndex * tileCountPerRowOrColumn + 1],
+          tileMap[rowIndex * tileCountPerRowOrColumn + 2],
+          tileMap[rowIndex * tileCountPerRowOrColumn + 3],
+        ];
+        return tileIdsInRow;
+      };
+      const retrieveTileIdsByColumn = (tileMap: number[], columnIndex: number) => {  
+        const tileIdsInColumn = [
+          tileMap[columnIndex + tileCountPerRowOrColumn * 0],
+          tileMap[columnIndex + tileCountPerRowOrColumn * 1],
+          tileMap[columnIndex + tileCountPerRowOrColumn * 2],
+          tileMap[columnIndex + tileCountPerRowOrColumn * 3],
+        ];
+        return tileIdsInColumn;
+      };
+
+      // Get current tile map
+      const currentTileMap = retrieveTileMap();
+      // iterates through every row and check for available merges (mimics logic in move function)
+      for (
+        let rowOrColumnIndex = 0;
+        rowOrColumnIndex < tileCountPerRowOrColumn;
+        rowOrColumnIndex += 1
+      ) {
+        // retrieves tiles in the row or column.
+        const availableTileIds = retrieveTileIdsByRow(currentTileMap, rowOrColumnIndex);
+
+        // previousTile is used to determine if tile can be merged with the current tile.
+        let previousTile: TileMeta | undefined;
+
+        // interate through available tiles.
+        availableTileIds.forEach((tileId, nonEmptyTileIndex) => {
+          const currentTile = tiles[tileId];
+
+          // if previous tile has the same value as the current one they can be merged together and game is not over yet
+          if (
+            previousTile !== undefined &&
+            previousTile.value === currentTile.value
+          ) {
+            return false
+          }
+        });
+      }
+      // iterates through every column and check for available merges (mimics logic in move function)
+      for (
+        let rowOrColumnIndex = 0;
+        rowOrColumnIndex < tileCountPerRowOrColumn;
+        rowOrColumnIndex += 1
+      ) {
+        // retrieves tiles in the row or column.
+        const availableTileIds = retrieveTileIdsByColumn(currentTileMap, rowOrColumnIndex);
+
+        // previousTile is used to determine if tile can be merged with the current tile.
+        let previousTile: TileMeta | undefined;
+
+        // interate through available tiles.
+        availableTileIds.forEach((tileId, nonEmptyTileIndex) => {
+          const currentTile = tiles[tileId];
+
+          // if previous tile has the same value as the current one they can be merged together and game is not over yet
+          if (
+            previousTile !== undefined &&
+            previousTile.value === currentTile.value
+          ) {
+            return false
+          }
+        });
+      }
+      // If we reach here, we have checked all rows and columns for available merges and did not find any, thus the game is over
+      return true
+    }
+  }
+
   const generateRandomTile = useCallback(() => {
     const emptyTiles = findEmptyTiles();
 
@@ -88,16 +173,13 @@ export const useGame = () => {
       const position = emptyTiles[index];
       // NEW replace always creating a new tile with value 2 by logic to choose a value of 2 or 4 with different probabilities
       // createTile({ position, value: 2 });
-
-      // NEW add logic to pick either a value of 2 with 95% chance or a 4 with 5% chance
+      // NEW logic to pick either a value of 2 with 95% chance or a 4 with 5% chance
       const twos = new Array(19).fill(2);
       const fours = new Array(1).fill(4);
       const newValues = twos.concat(fours);
       const randomIndex = Math.floor(Math.random() * newValues.length);
       const newTileValue = newValues[randomIndex]
-      createTile({ position, value: newTileValue });
-
-      
+      createTile({ position, value: newTileValue });  
     }
   }, [findEmptyTiles, createTile]);
 
@@ -197,6 +279,8 @@ export const useGame = () => {
         }
       });
     }
+    // NEW Check game over status
+    gameOver = checkGameOver()
 
     // wait until the end of all animations.
     setTimeout(() => dispatch({ type: "END_MOVE" }), animationDuration);
@@ -349,8 +433,7 @@ export const useGame = () => {
       isInitialRender.current = false;
       return;
     }
-    // NEW capture value of hasChanged into boardChanged to return back to Game
-    boardChanged = hasChanged
+
     if (!inMotion && hasChanged) {
       generateRandomTile();
     }
@@ -362,10 +445,10 @@ export const useGame = () => {
   const moveRight = moveRightFactory();
   const moveUp = moveUpFactory();
   const moveDown = moveDownFactory();
-// NEW add boardChanged and gameScore to return value as a boolean and number
-  return [boardChanged, gameScore, tileList, moveLeft, moveRight, moveUp, moveDown] as [
-    boolean,
+// NEW add gameOver and gameScore to return value as a boolean and number
+  return [gameScore, gameOver, tileList, moveLeft, moveRight, moveUp, moveDown] as [
     number,
+    boolean,
     TileMeta[],
     () => void,
     () => void,

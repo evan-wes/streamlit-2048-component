@@ -12,14 +12,21 @@ import "./App.less";
 const App = (props: ComponentProps) => {
   useEffect(() => Streamlit.setFrameHeight());
   const [date, setDate] = useState<Date>(new Date());
-  // NEW add game_score to state for display use
-  var [game_score, setScore] = useState(0)
+  
+  // NEW default game status for start of game
+  const initial_game_score = 0
+  const initial_game_over = false
+
+  // NEW add game_status to state for display use
+  var [game_score, setGameScore] = useState(initial_game_score)
+  var [game_over_status, setGameOver] = useState(initial_game_over)
   // NEW add game_counter to State to keep track of session game number
   var [game_number, setGameNumber] = useState(1)
-  // NEW default move log for start of current game
+  // NEW default move log for start of game
   const initialMoveLog: any = {
     0: {
-      score: game_score,
+      score: 0,
+      gameOver: false,
       move: 'None',
       tiles: []
     }
@@ -38,18 +45,15 @@ const App = (props: ComponentProps) => {
   const handleRestart = () => {
     setDate(new Date());
     // NEW add move_log to game_log
-    // const new_game_log_entry = {
-    //   game_log_key: game_number,
-    //   game_log_entry: move_log
-    // }
     setGameLog({
       ...game_log,
       [game_number]: move_log
     })
     // NEW increment game counter
     setGameNumber(game_number + 1);
-    // NEW reset score to zero
-    setScore(0)
+    // NEW reset game status to initial value
+    setGameScore(initial_game_score)
+    setGameOver(initial_game_over)
     // NEW reset move log to initial value
     setMoveLog(initialMoveLog)
   };
@@ -63,10 +67,11 @@ const App = (props: ComponentProps) => {
     })
   }
 
-  // NEW Function to handle score retrieval and update the state value
-  const handleScore = (childData: number) => {
-    // Set score to value retrieved from Game componenet
-    setScore(childData)
+  // NEW Function to handle score and game over status retrieval and update the state values
+  const handleGameStatus = (childData: any) => {
+    // Set status to value retrieved from Game componenet
+    setGameScore(childData['score'])
+    setGameOver(childData['gameOver'])
   }
 
   // NEW test View Game Log button function to send data back to streamlit
@@ -86,6 +91,8 @@ const App = (props: ComponentProps) => {
     Streamlit.setComponentValue(return_val)
   };
 
+
+
 //<Game key={date.toISOString()} />
   return (
     <div className="App">
@@ -94,14 +101,15 @@ const App = (props: ComponentProps) => {
           <h1>Play&nbsp;2048</h1>
         </div>
         <div>
-          <Button key={game_score}>Score: {game_score}</Button>
+          <Button>Score: {game_score}</Button>
+          <Button>Game Over: {game_over_status}</Button>
         </div>
         <div>
           <Button onClick={handleRestart}>Restart</Button>
         </div>
       </div>
       
-      <Game key={date.toISOString()} parentRetrieveNewMoveLogCallback = {handleNewMoveLogEntry} parentRetrieveScoreCallback = {handleScore}  />
+      <Game key={date.toISOString()} retrieveNewMoveLogCallback = {handleNewMoveLogEntry} retrieveStatusCallback = {handleGameStatus}  />
       
       <div className="footer">
         <div>
