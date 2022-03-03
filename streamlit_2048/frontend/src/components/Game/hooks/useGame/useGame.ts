@@ -18,6 +18,9 @@ export const useGame = () => {
   // state
   const [state, dispatch] = useReducer(GameReducer, initialState);
   const { tiles, byIds, hasChanged, inMotion } = state;
+
+  // console.log('top of useGame')
+  
    
 
   const createTile = useCallback(
@@ -429,6 +432,9 @@ export const useGame = () => {
       // NEW create both tiles using the randomly generated positions
       createTile({ position: [position_tile_1_col, position_tile_1_row], value: 2 });
       createTile({ position: [position_tile_2_col, position_tile_2_row], value: 2 });
+      // NEW reset score to zero
+      gameScore = 0
+      gameOver = false
       
       isInitialRender.current = false;
       return;

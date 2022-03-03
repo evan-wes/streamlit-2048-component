@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react"; // NEW added useState, useCallback 
+import React, { useEffect, useCallback } from "react"; // NEW added useCallback 
 import { useThrottledCallback } from "use-debounce";
 
 import { useGame } from "./hooks/useGame";
@@ -8,11 +8,13 @@ import { Board, animationDuration, tileCount } from "../Board";
 
 // NEW added props to pass callback, added score to return value
 export const Game = (props:any) => {
-  // NEW added score 
+  // NEW added score and gameOver
   const [score, gameOver, tiles, moveLeft, moveRight, moveUp, moveDown] = useGame();
 
+  // console.log('TOP OF GAME')
+
   // NEW counter for moves and dictionary storage
-  var [move_counter, setMoveCounter] = useState(0)
+  var move_counter = 0
   
   // NEW added retrieveStatusCallback callback function to update game status
   props.retrieveStatusCallback({score: score, gameOver: gameOver});
@@ -51,8 +53,8 @@ export const Game = (props:any) => {
     }
     // NEW send new move entry back to App
     props.retrieveNewMoveLogCallback(createNewMoveEntry(e))
-    // NEW increment move_counter in the state
-    setMoveCounter(move_counter + 1)
+    // NEW increment move_counter
+    move_counter++
   }
   
 

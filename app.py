@@ -54,6 +54,7 @@ def convert_2048_component_return_value_to_dataframes(ret):
         # Iterate over moves in move log dictionary
         # move_ids = []
         scores = []
+        gameOvers = []
         moves = []
         boards = []
         board_exps = []
@@ -70,6 +71,7 @@ def convert_2048_component_return_value_to_dataframes(ret):
             # Append move dictionary info to each list
             # move_ids.append(move_id)
             scores.append(move_dict['score'])
+            gameOvers.append(move_dict['gameOver'])
             moves.append(move_dict['move'].replace('Arrow', ''))
             # boards.append(np.array2string(board))
             # board_exps.append(np.array2string(board_exp))
@@ -80,7 +82,7 @@ def convert_2048_component_return_value_to_dataframes(ret):
             
         # Create dataframe for this game and add to dictionary
         # game_df = pd.DataFrame({'turn': move_ids, 'score': scores, 'move': moves, 'board': boards, 'board_exp': board_exps})
-        game_df = pd.DataFrame({'score': scores, 'move': moves, 'board': boards, 'board_exp': board_exps})
+        game_df = pd.DataFrame({'score': scores, 'gameOvers': gameOvers, 'move': moves, 'board': boards, 'board_exp': board_exps})
         game_dfs[game_id] = game_df
     
     # Return dictionary of dataframes
