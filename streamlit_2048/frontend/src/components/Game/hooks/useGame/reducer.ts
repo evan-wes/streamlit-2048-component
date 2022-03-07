@@ -21,7 +21,9 @@ type Action =
   | { type: "UPDATE_TILE"; tile: TileMeta }
   | { type: "MERGE_TILE"; source: TileMeta; destination: TileMeta }
   | { type: "START_MOVE" }
-  | { type: "END_MOVE" };
+  | { type: "END_MOVE" }//;
+  // NEW fetch tiles action
+  | { type: "FETCH_TILES" };
 
 export const GameReducer = (state: State, action: Action) => {
   switch (action.type) {
@@ -73,6 +75,9 @@ export const GameReducer = (state: State, action: Action) => {
         ...state,
         inMotion: false,
       };
+    // NEW case for returning the state
+    case "FETCH_TILES":
+      return state;
     default:
       return state;
   }

@@ -82,7 +82,7 @@ def convert_2048_component_return_value_to_dataframes(ret):
             
         # Create dataframe for this game and add to dictionary
         # game_df = pd.DataFrame({'turn': move_ids, 'score': scores, 'move': moves, 'board': boards, 'board_exp': board_exps})
-        game_df = pd.DataFrame({'score': scores, 'gameOvers': gameOvers, 'move': moves, 'board': boards, 'board_exp': board_exps})
+        game_df = pd.DataFrame({'score': scores, 'gameOver': gameOvers, 'move': moves, 'board': boards, 'board_exp': board_exps})
         game_dfs[game_id] = game_df
     
     # Return dictionary of dataframes
