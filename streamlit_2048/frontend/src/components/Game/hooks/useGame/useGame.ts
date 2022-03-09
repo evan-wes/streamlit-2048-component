@@ -9,8 +9,6 @@ import { GameReducer, initialState } from "./reducer";
 
 // NEW variable to hold the current game score, initialized outside of useGame hook
 var gameScore: number = 0
-// NEW variable to hold the gameOver status, initialized outside of useGame hook
-var gameOver: boolean = false
 
 export const useGame = () => {
   const isInitialRender = useRef(true);
@@ -19,9 +17,6 @@ export const useGame = () => {
   const [state, dispatch] = useReducer(GameReducer, initialState);
   const { tiles, byIds, hasChanged, inMotion } = state;
 
-  // console.log('top of useGame')
-  
-   
 
   const createTile = useCallback(
     ({ position, value }: Partial<TileMeta>) => {
@@ -82,112 +77,6 @@ export const useGame = () => {
 
     return emptyTiles;
   }, [retrieveTileMap]);
-
-  // NEW function to build a tile value array for diagnosis
-  const createTileValueArray = () => {
-    // Get current tile map: 1D array with tile ids. If an id is 0, it means there is no tile in that position
-    const currentTileMap = retrieveTileMap();
-    var currentTileValues = new Array(currentTileMap.length).fill(0)
-    for (
-      let ii = 0;
-      ii < currentTileMap.length;
-      ii += 1
-    ) {
-      if (currentTileMap[ii] === 0) {continue}
-      currentTileValues[ii] = tiles[currentTileMap[ii]].value
-    }
-
-    console.log('Current tile values:')
-    console.log(`${currentTileValues.slice(0,4)}`)
-    console.log(`${currentTileValues.slice(4,8)}`)
-    console.log(`${currentTileValues.slice(8,12)}`)
-    console.log(`${currentTileValues.slice(12,16)}`)
-    
-  }
-
-  
-  // NEW function to check if the game is over
-  const checkGameOver = useCallback(() => {
-    console.log('')
-    console.log('')
-    console.log('Inside checkGameOver')
-    const emptyTiles = findEmptyTiles();
-    console.log(`emptyTiles: ${emptyTiles}`)
-    // If there are any empty tiles, the game is not over
-    if (emptyTiles.length > 2) {
-    // if (emptyTiles.length < 0) {
-      return false
-    } else {
-      // Determine if there are any available merges
-      // Modified copies of tile retrieval functions from move factories
-      const retrieveTileIdsByRow = (tileMap: number[], rowIndex: number) => { 
-        const tileIdsInRow = [
-          tileMap[rowIndex * tileCountPerRowOrColumn + 0],
-          tileMap[rowIndex * tileCountPerRowOrColumn + 1],
-          tileMap[rowIndex * tileCountPerRowOrColumn + 2],
-          tileMap[rowIndex * tileCountPerRowOrColumn + 3],
-        ];
-        return tileIdsInRow;
-      };
-      const retrieveTileIdsByColumn = (tileMap: number[], columnIndex: number) => {  
-        const tileIdsInColumn = [
-          tileMap[columnIndex + tileCountPerRowOrColumn * 0],
-          tileMap[columnIndex + tileCountPerRowOrColumn * 1],
-          tileMap[columnIndex + tileCountPerRowOrColumn * 2],
-          tileMap[columnIndex + tileCountPerRowOrColumn * 3],
-        ];
-        return tileIdsInColumn;
-      };
-      // Get current tile map: 1D array with tile ids. If an id is 0, it means there is no tile in that position
-      const currentTileMap = retrieveTileMap();
-      console.log('')
-      console.log(`Retrieved tile map: ${currentTileMap}`)
-      // iterates through every row and column and checks for available merges
-      for (
-        let rowOrColumnIndex = 0;
-        rowOrColumnIndex < tileCountPerRowOrColumn;
-        rowOrColumnIndex += 1
-      ) {
-        console.log(`Checking Row and Column index: ${rowOrColumnIndex}`)
-        // retrieves tiles in this row and column
-        const rowTileIds = retrieveTileIdsByRow(currentTileMap, rowOrColumnIndex);
-        const columnTileIds = retrieveTileIdsByColumn(currentTileMap, rowOrColumnIndex);
-        console.log(`Retrieved rowTileIds: ${rowTileIds} and columnTileIds: ${columnTileIds}`)
-
-        // interate through tiles in this row and column and check for duplicates
-        for (
-          let rowOrColumnInnerIndex = 0;
-          rowOrColumnInnerIndex < tileCountPerRowOrColumn-1;
-          rowOrColumnInnerIndex += 1
-        ){
-          // A value of zero in the tile map returned by retrieveTileMap indicates no tile in that position.
-          // Skip the rest of the loop if the current or next id is zero
-          const thisRowID = rowTileIds[rowOrColumnInnerIndex]
-          const nextRowID = rowTileIds[rowOrColumnInnerIndex+1]
-          const thisColumnID = columnTileIds[rowOrColumnInnerIndex]
-          const nextColumnID = columnTileIds[rowOrColumnInnerIndex+1]
-          if (thisRowID === 0 || nextRowID === 0) {continue}
-          console.log(`Checking Row tile pairs: ${tiles[rowTileIds[rowOrColumnInnerIndex]].value} and ${tiles[rowTileIds[rowOrColumnInnerIndex+1]].value}`)
-          // Check adjacent tiles in row
-          if (tiles[rowTileIds[rowOrColumnInnerIndex]].value === tiles[rowTileIds[rowOrColumnInnerIndex+1]].value){
-            console.log('Row check: Returning false')
-            return false
-          }
-          if (thisColumnID === 0 || nextColumnID === 0) {continue}
-          console.log(`Checking Column tile pairs: ${tiles[columnTileIds[rowOrColumnInnerIndex]].value} and ${tiles[columnTileIds[rowOrColumnInnerIndex+1]].value}`)
-          // Check adjacent tiles in column
-          if (tiles[columnTileIds[rowOrColumnInnerIndex]].value === tiles[columnTileIds[rowOrColumnInnerIndex+1]].value){
-            console.log('Column check: Returning false')
-            return false
-          }
-        }
-        
-      }
-      // If we reach here, we have checked all rows and columns for available merges and did not find any, thus the game is over
-      console.log('Returning true')
-      return true
-    }
-  }, [tiles, findEmptyTiles, retrieveTileMap]);
 
   const generateRandomTile = useCallback(() => {
     const emptyTiles = findEmptyTiles();
@@ -305,15 +194,6 @@ export const useGame = () => {
     }
     // wait until the end of all animations.
     setTimeout(() => dispatch({ type: "END_MOVE" }), animationDuration);
-    // NEW Check game over status
-    // console.log('About to check game over!')
-    // gameOver = checkGameOver()
-    // console.log('Tile Values in move function after END_MOVE')
-    // createTileValueArray()
-    // dispatch({ type: "FETCH_TILES" })
-    // console.log('Tile Values in move function after FETCH_TILES')
-    // createTileValueArray()
-
   };
 
   const moveLeftFactory = () => {
@@ -461,22 +341,13 @@ export const useGame = () => {
       createTile({ position: [position_tile_2_col, position_tile_2_row], value: 2 });
       // NEW reset score to zero
       gameScore = 0
-      gameOver = false
-      
+
       isInitialRender.current = false;
       return;
     }
 
     if (!inMotion && hasChanged) {
       generateRandomTile();
-      // NEW Check game over status
-      // console.log('About to check game over!')
-      // gameOver = checkGameOver()
-      // console.log('Tile Values in useEffect after new tile created')
-      // createTileValueArray()
-      // dispatch({ type: "FETCH_TILES" })
-      // console.log('Tile Values in useEffect after FETCH_TILES')
-      // createTileValueArray()
     }
   }, [hasChanged, inMotion, createTile, generateRandomTile]);//, checkGameOver, createTileValueArray]);
 
@@ -486,7 +357,7 @@ export const useGame = () => {
   const moveRight = moveRightFactory();
   const moveUp = moveUpFactory();
   const moveDown = moveDownFactory();
-// NEW add gameOver and gameScore to return value as a boolean and number
+// NEW added gameScore to return value as a type number
   return [gameScore, tileList, moveLeft, moveRight, moveUp, moveDown] as [
     number,
     TileMeta[],

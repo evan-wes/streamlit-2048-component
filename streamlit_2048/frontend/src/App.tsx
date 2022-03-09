@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "./components/Button";
 import { Game } from "./components/Game";
 
+// NEW import state for Streamlit custom components
 import { ComponentProps, Streamlit, withStreamlitConnection } from "streamlit-component-lib";
 
 import "./App.less";
@@ -10,15 +11,15 @@ import "./App.less";
 /* eslint-disable react/jsx-no-target-blank */
 // export const App = () => {
 const App = (props: ComponentProps) => {
+  // NEW dynamic effect to adjust the component frame height in the Streamlit app
   useEffect(() => Streamlit.setFrameHeight());
+
+  // NEW Get data passed from Streamlit via props
+  const { player_name } = props.args;
+
+  // Add date variable to state. Used as key of Game component
   const [date, setDate] = useState<Date>(new Date());
-  
-  // NEW non state version of variables
-  // var new_game_score: number = 0
-  // var new_game_score_string:string = '0'
-  // var new_game_over: boolean = false
-  // var new_game_over_string:string = 'false'
-  // var new_current_move_counter = 0
+
 
   // NEW Initial game status for restarting game
   const initialGameStatus: any = {
@@ -26,65 +27,93 @@ const App = (props: ComponentProps) => {
     initialGameOver: false,
     initialMoveCounter: 1
   }
-  // NEW default move log for start of game
+
+  // NEW default move log entry for start of game, initial key is initialGameStatus['initialMoveCounter']
+  const initialMoveLogEntry: any = {
+    score: initialGameStatus['initialScore'],
+    gameOver: initialGameStatus['initialGameOver'],
+    move: 'Initial',
+    tiles: []
+  }
+  // NEW default move log for reseting the game
   const initialMoveLog: any = {
-    [initialGameStatus['initialMoveCounter']]: {
-      score: initialGameStatus['initialScore'],
-      gameOver: initialGameStatus['initialGameOver'],
-      move: 'None',
-      tiles: []
-    }
+    [initialGameStatus['initialMoveCounter']]: initialMoveLogEntry
   }
 
-  // NEW add game_status to state for display use
+  // NEW add game status variables to state
   var [game_score, setGameScore] = useState(initialGameStatus['initialScore'])
-  var [game_score_string, setGameScoreString] = useState(`${initialGameStatus['initialScore']}`)
   var [game_over, setGameOver] = useState(initialGameStatus['initialGameOver'])
-  var [game_over_string, setGameOverString] = useState(`${initialGameStatus['initialGameOver']}`)
+  var [move_counter, setMoveCounter] = useState(initialGameStatus['initialMoveCounter'])
   // NEW add game_counter to State to keep track of session game number
-  var [game_number, setGameNumber] = useState(1)
-  var [current_move_counter, setCurrentMoveCounter] = useState(initialGameStatus['initialMoveCounter'])
+  var [game_counter, setGameCounter] = useState(1)
+
   
   // NEW move_log added to state with initialMoveLog as the first entry
   var [move_log, setMoveLog] = useState(initialMoveLog)
   // NEW default game log
   const initialGameLog: any = {}
-  initialGameLog[game_number] = initialMoveLog
+  initialGameLog[game_counter] = initialMoveLog
   // NEW game_log added to state with initialGameLog as the first entry
   var [game_log, setGameLog] = useState(initialGameLog)
 
-  // NEW Get data passed from Streamlit from props
-  const { player_name } = props.args;
 
+
+  // NEW function to handle restarting the game with logic to only log games with at least one move 
   const handleRestart = () => {
+    console.log('')
     console.log('Restart clicked')
-    setDate(new Date());
-    // NEW add move_log to game_log
-    // TODO add check to skip adding log if no moves have been made
-    setGameLog({
-      ...game_log,
-      [game_number]: move_log
-    })
-    // NEW increment game counter
-    setGameNumber(game_number + 1);
-    console.log(`game_number: ${game_number}`)
-    // NEW reset game status variables to initial value
-    setGameScore(initialGameStatus['initialScore'])
-    setGameScoreString(`${initialGameStatus['initialScore']}`)
-    setGameOver(initialGameStatus['initialGameOver'])
-    setGameOverString(`${initialGameStatus['initialGameOver']}`)
-    setMoveLog(initialMoveLog)
-    // new_game_score = 0
-    // new_game_score_string = '0'
-    // new_game_over = false
-    // new_game_over_string = 'false'
-    console.log(`game_score: ${game_score}`)
-    // console.log(`new_game_score: ${new_game_score}`)
-    console.log(`game_over: ${game_over}`)
-    // console.log(`new_game_over: ${new_game_over}`)
-    // NEW reset move log to initial value
+    console.log(`move_counter: ${move_counter}`)
+    console.log(`move_log[move_counter]: ${JSON.stringify(move_log[move_counter])}`)
     
-    console.log(`move_log: ${move_log}`)
+    // First check if the move_log entry for the current value of move_counter is undefined. 
+    // It will only be undefined if at least one move was made, otherwise it is equal to initialMoveLogEntry
+    if (move_log[move_counter] !== undefined) {
+      // Here we check if the Restart button was clicked more than once in a row. If a game was logged, 
+      // move_log was reset to initialMoveLog, and move_counter was reset to 1. 
+      // Thus move_log[move_counter] is equal to initialMoveLogEntry.
+      // We don't want to check equality directly between move_log and initialMoveLog, or between
+      // move_log[move_counter] and initialMoveLogEntry since they are Objects, so we check the value of the latest
+      // 'move', which is unique in initialMoveLogEntry. We need to do this check separately since we cannot access 
+      // move_log[move_counter] if it is undefined
+      if (move_log[move_counter]['move'] === initialMoveLogEntry['move']) {
+        // If reached here, the Restart buttun has been pressed in a row. There is nothing to do.
+        // TODO, show a message or something to the player telling them to go ahead and make a move?
+        console.log('Game not added to game_log')
+        console.log(`move_counter: ${move_counter}`)
+        console.log(`move_log[move_counter]: ${JSON.stringify(move_log[move_counter])}`)
+        console.log(`initialMoveLogEntry: ${JSON.stringify(initialMoveLogEntry)}`)
+        console.log(`move_log: ${JSON.stringify(move_log)}`)
+        console.log(`initialMoveLog: ${JSON.stringify(initialMoveLog)}`)
+      }
+    } else {
+      // If we reach here, we have a real game log to record
+      // NEW add move_log to game_log
+      console.log('Game added to game_log')
+      setGameLog({
+        ...game_log,
+        [game_counter]: move_log
+      })
+      // NEW increment game counter
+      setGameCounter(game_counter + 1)
+      console.log(`game_counter: ${game_counter}`)
+
+      
+      // Add new date to state for Game component key
+      setDate(new Date());
+
+      // NEW reset game status variables to initial value
+      setGameScore(initialGameStatus['initialScore'])
+      setGameOver(initialGameStatus['initialGameOver'])
+      setMoveCounter(initialGameStatus['initialMoveCounter'])
+      setMoveLog(initialMoveLog)
+      console.log(`game_score: ${game_score}`)
+      console.log(`game_over: ${game_over}`)
+      console.log(`move_counter: ${move_counter}`)
+      console.log(`move_log[move_counter]: ${JSON.stringify(move_log[move_counter])}`)
+      console.log(`initialMoveLogEntry: ${JSON.stringify(initialMoveLogEntry)}`)
+      console.log(`move_log: ${JSON.stringify(move_log)}`)
+      console.log(`initialMoveLog: ${JSON.stringify(initialMoveLog)}`)
+    }
   };
 
   // NEW Function to handle move log retrieval and update the state value
@@ -95,7 +124,7 @@ const App = (props: ComponentProps) => {
       [childData['move_log_key']]: childData['move_log_entry']
     })
     // Increment move counter for the current game
-    setCurrentMoveCounter(current_move_counter + 1)
+    setMoveCounter(move_counter + 1)
   }
 
   // NEW Function to handle score and game over status retrieval and update the state values
@@ -103,21 +132,15 @@ const App = (props: ComponentProps) => {
     // Set status to value retrieved from Game componenet
     // console.log('in handleGameStatus')
     setGameScore(childData['score'])
-    setGameScoreString(`${childData['score']}`)
     setGameOver(childData['gameOver'])
-    setGameOverString(`${childData['gameOver']}`)
-    // new_game_score = childData['score']
-    // new_game_score_string = `${childData['score']}`
-    // new_game_over = childData['gameOver']
-    // new_game_over_string = `${childData['gameOver']}`
   }
 
-  // NEW test View Game Log button function to send data back to streamlit
+  // NEW View Game Log button callback function to send data back to streamlit
   const handleViewGameLog = () => {
-    // NEW update game_number : move_log entry in game log
+    // NEW update game_counter : move_log entry in game log so it contains updated moves
     setGameLog({
       ...game_log,
-      [game_number]: move_log
+      [game_counter]: move_log
     })
     // NEW return value to pass back to Streamlit
     const ret_date = new Date()
@@ -139,14 +162,14 @@ const App = (props: ComponentProps) => {
           <h1>Play&nbsp;2048&nbsp;&nbsp;</h1>
         </div>
         <div>
-          <Button>Score: {game_score_string}<br/>Game Over: {game_over_string}</Button>
+          <Button>Score: {game_score}<br/>Game Over: {`${game_over}`}</Button>
         </div>
         <div>
           <Button onClick={handleRestart}>Restart</Button>
         </div>
       </div>
       
-      <Game key={date.toISOString()} retrieveNewMoveLog = {handleNewMoveLogEntry} retrieveStatus = {handleGameStatus} move_counter = {current_move_counter}  />
+      <Game key={date.toISOString()} retrieveNewMoveLog={handleNewMoveLogEntry} retrieveStatus={handleGameStatus} move_counter = {move_counter}  />
       
       <div className="footer">
         <div>

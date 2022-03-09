@@ -125,15 +125,16 @@ if game_return_val is not None:
         
         st.markdown(f"## Game {game_id}:")
         processed_game_df = process_game_df(game_df)
-        st.write(processed_game_df.drop(columns=['board_exp']))
+        st.write(processed_game_df)#.drop(columns=['board_exp']))
     
     st.markdown(f"# Game log analysis for player {game_return_val['name']}:")
     for game_id, game_df in game_dfs.items():
         st.markdown(f"## Game {game_id}:")
         try:
-            df = analyse_game_record(game_df)
-            # st.write(df)
-            st.write(df.drop_duplicates())
+            processed_game_df = process_game_df(game_df)
+            df = analyse_game_record(processed_game_df)
+            st.write(df)
+            # st.write(df.drop_duplicates())
         except:
             st.warning('Try Again (You may need to make another move)')
 

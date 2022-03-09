@@ -13,7 +13,7 @@ export const Game = (props:any) => {
   const [score, tiles, moveLeft, moveRight, moveUp, moveDown] = useGame();
 
   // NEW function to build a tile value array for diagnosis
-  const createTileValueArray = useCallback(() => {
+  const createTileValueArray = useCallback((verbose=false) => {
     // Create array filled with zeros
     var currentTileValues = new Array(tileCount * tileCount).fill(0)
     tiles.forEach((tile) => {
@@ -21,11 +21,16 @@ export const Game = (props:any) => {
       currentTileValues[tileValueIndex] = tile.value
       // console.log(`position: (${tile.position[0]}, ${tile.position[1]}), value: ${tile.value}`)
     });
-    console.log('Current tile values:')
-    console.log(`${currentTileValues.slice(0,4)}`)
-    console.log(`${currentTileValues.slice(4,8)}`)
-    console.log(`${currentTileValues.slice(8,12)}`)
-    console.log(`${currentTileValues.slice(12,16)}`)
+    if (verbose === true){
+      console.log('Current tile values:')
+      for (
+        let ii = 0;
+        ii < tileCount;
+        ii += 1
+      ){
+        console.log(`${currentTileValues.slice(ii*tileCount, (ii+1)*tileCount)}`)
+      }
+    }
     return currentTileValues;
   }, [tiles]);
 
@@ -96,19 +101,11 @@ export const Game = (props:any) => {
     console.log('Returning true')
     return true
   }, [createTileValueArray])
-  // console.log('TOP OF GAME')
-  // console.log('Tiles in GAME:')
-  // createTileValueArray()
-  // tiles.forEach((tile) => {
-  //   console.log(`position: (${tile.position[0]}, ${tile.position[1]}), value: ${tile.value}`)
-  // })
-  
-  // NEW added retrieveStatusCallback callback function to update game status
-  // props.retrieveStatusCallback({score: score, gameOver: gameOver});
 
   // NEW function to create a new move entry
   const createNewMoveEntry = useCallback((move: string) => {
     // NEW create new_move_log_entry to send back to App
+    // if (gameOver === true) {move = 'None'}
     const new_move_log_entry: any = {
       move_log_key: props.move_counter,
       move_log_entry: {
@@ -149,12 +146,11 @@ export const Game = (props:any) => {
         moveDown();
         break;
     }
-    // NEW create and send new move entry back to App
-    // props.retrieveNewMoveLogCallback(createNewMoveEntry(e.code))
+    // Check the game over status after this move to update gameOver before creating the new move log entry
+    gameOver = checkGameOver()
+    createNewGameStatus(score, gameOver)
     createNewMoveEntry(e.code)
   }
-  
-
 
   // NEW throttled function for game moves that protects the reducer from being flooded with events
   const throttledGameMove = useThrottledCallback(
@@ -180,26 +176,11 @@ export const Game = (props:any) => {
     };
   }, [handleKeyDown]);
   
-  // NEW wrapper functions for retrieval functions passed by props
-  // const retrieveStatusWrapper = useCallback((score: number, gameOver: boolean) => {
-  //   props.retrieveStatus({score: score, gameOver: gameOver})
-  // }, [props])
-  // const retrieveNewMoveLogWrapper = useCallback((move: string) => {
-  //   props.retrieveNewMoveLog(createNewMoveEntry(move))
-  // }, [props, createNewMoveEntry])
-
-
-  // NEW useEffect to check game over when the tiles change and make final move log if the game is over
-  // useEffect(() => {
-  //   const new_gameOver = checkGameOver()
-  //   retrieveStatusWrapper(score, new_gameOver);
-  //   // if (new_gameOver === true) {retrieveNewMoveLogWrapper('None')}
-  // }, [score, tiles, checkGameOver, retrieveStatusWrapper, retrieveNewMoveLogWrapper])
+  // NEW useEffect to check game over when the tiles change, included a new tile added after a move
   useEffect(() => {
     const new_gameOver = checkGameOver()
-    createNewGameStatus(score, new_gameOver);
-    // if (new_gameOver === true) {createNewMoveEntry('None')};
-  }, [score, tiles, checkGameOver, createNewMoveEntry, createNewGameStatus])
+    createNewGameStatus(score, new_gameOver)
+  }, [score, tiles, checkGameOver, createNewGameStatus])
 
   return <Board tiles={tiles} tileCountPerRow={tileCount} />;
 };

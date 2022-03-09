@@ -8,8 +8,9 @@ In this repo, I have incorporated the above linked React component into a custom
  - [X] Add capability to return data to streamlit containing the game state and move/board history
  - [X] Add capability to randomize starting tile locations
  - [X] Add capability to generate a new tile with value of 2 or 4 (with 95% and 5% probability respectively) after a move, instead of always 2
- - [ ] Add capability of input to be recieved from streamlit
+ - [ ] Add capability of input to be recieved from streamlit (custom starting boards, other board sizes, etc)
  - [X] Add ability to check game over status
+ - [X] Add logic to intelligently store new game logs, ignoring multiple clicks of the Restart button
  - [ ] Add more styles past 2048 tile
 
 These modifications will enable this component to be used in building an AI to play the game by learning play how to play from datasets created from many game plays. The purpose of using a custom component is that the streamlit app is not rerun top-to-bottom whenever a player makes a move, as in the current implementation. The game also looks and plays much nicer than my current basic HTML/CSS frontend.
