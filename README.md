@@ -11,6 +11,7 @@ In this repo, I have incorporated the above linked React component into a custom
  - [ ] Add capability of input to be recieved from streamlit (custom starting boards, other board sizes, etc)
  - [X] Add ability to check game over status
  - [X] Add logic to intelligently store new game logs, ignoring multiple clicks of the Restart button
+ - [X] Add capability to store game logs in external files, such as CSV with unique identifiers for each session and separate files for each game
  - [ ] Add more styles past 2048 tile
 
 These modifications will enable this component to be used in building an AI to play the game by learning play how to play from datasets created from many game plays. The purpose of using a custom component is that the streamlit app is not rerun top-to-bottom whenever a player makes a move, as in the current implementation. The game also looks and plays much nicer than my current basic HTML/CSS frontend.

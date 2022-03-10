@@ -1,7 +1,15 @@
 import streamlit as st
+import os
+import uuid
 import numpy as np
 import pandas as pd
 from streamlit_2048 import st_2048
+
+# uuid module to generate a random unique id
+if 'uuid' not in st.session_state:
+    st.session_state['uuid'] = uuid.uuid4()
+    st.session_state['uuid_str'] = str(st.session_state['uuid'])
+st.write(f"Session UUID: `{st.session_state['uuid']}`")
 
 if 'game_id' not in st.session_state:
     st.session_state['game_id'] = 1
@@ -120,22 +128,57 @@ if game_return_val is not None:
     except:
         st.warning('Try Again (You may need to make another move)')
 
-    # st.markdown(f"# Game log for player {game_return_val['name']}:")
+    
+    st.markdown(f"# Game log for player {game_return_val['name']}:")
     for game_id, game_df in game_dfs.items():
-        
-        st.markdown(f"## Game {game_id}:")
-        processed_game_df = process_game_df(game_df)
-        st.write(processed_game_df)#.drop(columns=['board_exp']))
+        with st.expander(f'Expand game log for game {game_id}:'):
+            st.markdown(f"## Game {game_id}:")
+            processed_game_df = process_game_df(game_df)
+            st.write(processed_game_df)#.drop(columns=['board_exp']))
     
     st.markdown(f"# Game log analysis for player {game_return_val['name']}:")
+    analysis_dfs = {}
     for game_id, game_df in game_dfs.items():
-        st.markdown(f"## Game {game_id}:")
+        
         try:
             processed_game_df = process_game_df(game_df)
-            df = analyse_game_record(processed_game_df)
-            st.write(df)
+            analysis_dfs[game_id] = analyse_game_record(processed_game_df)
+            with st.expander(f'Expand game analysis for game {game_id}:'):
+                st.markdown(f"## Game {game_id}:")
+                st.write(analysis_dfs[game_id])
             # st.write(df.drop_duplicates())
         except:
             st.warning('Try Again (You may need to make another move)')
+    
+    if st.button('Save game record'):
+        save_dir = os.path.join('game_records', st.session_state['uuid_str'])
+        if not os.path.isdir(save_dir):
+            os.makedirs(save_dir)
+        for game_id, game_df in game_dfs.items():
+            st.write('Saving...')
+            game_log_fn = f'game_id_{game_id}_game_log.csv'
+            game_analysis_fn = f'game_id_{game_id}_game_analysis.csv'
+            game_dfs[game_id].to_pickle(os.path.join(save_dir, game_log_fn))
+            analysis_dfs[game_id].to_pickle(os.path.join(save_dir, game_analysis_fn))
+            st.write(f"Saved Game Log: {os.path.join(save_dir, game_log_fn)}")
+            st.write(f"Saved Game Analysis: {os.path.join(save_dir, game_analysis_fn)}")
+
+    if st.button('Load game records'):
+        save_dir = os.path.join('game_records', st.session_state['uuid_str'])
+        for game_id in game_dfs.keys():
+            game_log_fn = f'game_id_{game_id}_game_log.csv'
+            game_analysis_fn = f'game_id_{game_id}_game_analysis.csv'
+            read_log_df = pd.read_pickle(os.path.join(save_dir, game_log_fn))
+            read_analysis_df = pd.read_pickle(os.path.join(save_dir, game_analysis_fn))
+            st.write(f"Read Game Log: {os.path.join(save_dir, game_log_fn)}")
+            st.write(f"Read Game Analysis: {os.path.join(save_dir, game_analysis_fn)}")
+            with st.expander(f'Expand loaded game log for game {game_id}:'):
+                st.markdown(f"## Game {game_id}:")
+                st.write(read_log_df)
+            with st.expander(f'Expand loaded game analysis for game {game_id}:'):
+                st.markdown(f"## Game {game_id}:")
+                st.write(read_analysis_df)
+    
+
 
     

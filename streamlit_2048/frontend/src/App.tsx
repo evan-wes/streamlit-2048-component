@@ -84,6 +84,7 @@ const App = (props: ComponentProps) => {
         console.log(`initialMoveLogEntry: ${JSON.stringify(initialMoveLogEntry)}`)
         console.log(`move_log: ${JSON.stringify(move_log)}`)
         console.log(`initialMoveLog: ${JSON.stringify(initialMoveLog)}`)
+        // We still want to actually restart the game (i.e. generate a new starting layout)
       }
     } else {
       // If we reach here, we have a real game log to record
@@ -96,24 +97,24 @@ const App = (props: ComponentProps) => {
       // NEW increment game counter
       setGameCounter(game_counter + 1)
       console.log(`game_counter: ${game_counter}`)
-
-      
-      // Add new date to state for Game component key
-      setDate(new Date());
-
-      // NEW reset game status variables to initial value
-      setGameScore(initialGameStatus['initialScore'])
-      setGameOver(initialGameStatus['initialGameOver'])
-      setMoveCounter(initialGameStatus['initialMoveCounter'])
-      setMoveLog(initialMoveLog)
-      console.log(`game_score: ${game_score}`)
-      console.log(`game_over: ${game_over}`)
-      console.log(`move_counter: ${move_counter}`)
-      console.log(`move_log[move_counter]: ${JSON.stringify(move_log[move_counter])}`)
-      console.log(`initialMoveLogEntry: ${JSON.stringify(initialMoveLogEntry)}`)
-      console.log(`move_log: ${JSON.stringify(move_log)}`)
-      console.log(`initialMoveLog: ${JSON.stringify(initialMoveLog)}`)
     }
+      
+    // Add new date to state for Game component key
+    setDate(new Date());
+
+    // NEW reset game status variables to initial value
+    setGameScore(initialGameStatus['initialScore'])
+    setGameOver(initialGameStatus['initialGameOver'])
+    setMoveCounter(initialGameStatus['initialMoveCounter'])
+    setMoveLog(initialMoveLog)
+    console.log(`game_score: ${game_score}`)
+    console.log(`game_over: ${game_over}`)
+    console.log(`move_counter: ${move_counter}`)
+    console.log(`move_log[move_counter]: ${JSON.stringify(move_log[move_counter])}`)
+    console.log(`initialMoveLogEntry: ${JSON.stringify(initialMoveLogEntry)}`)
+    console.log(`move_log: ${JSON.stringify(move_log)}`)
+    console.log(`initialMoveLog: ${JSON.stringify(initialMoveLog)}`)
+    
   };
 
   // NEW Function to handle move log retrieval and update the state value
